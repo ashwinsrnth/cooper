@@ -20,7 +20,6 @@ __global__ void permuteKernel(double *in_d,
     out_d[tiz*n1*n2 + tiy*n1 + tix] = \
         in_d[tiz*z_stride + tiy*y_stride + tix*x_stride];
 }
-                
 '''
 
 @context_dependent_memoize
@@ -32,32 +31,28 @@ def _get_permute_kernel():
     permute_kernel.prepare('PPiiiiii')
     return permute_kernel
 
-def permute(A, permutation):
+def permute(a, b, permutation):
     '''
-    Permute the values of 3D array A
-    according to the permutation
-    of axes specified
+    :param a:
+    :type a:
+    :param b:
+    :type b:
+    :param permutation: 
     '''
-    in_strides = np.array(A.strides)/A.dtype.itemsize
-
-    out_shape = (A.shape[permutation[0]], 
-                A.shape[permutation[1]],
-                A.shape[permutation[2]])
-    out_strides = (in_strides[permutation[0]],
-                    in_strides[permutation[1]],
-                    in_strides[permutation[2]])
-    B =  np.zeros(out_shape, A.dtype)
-
-    n3, n2, n1 = out_shape
-    A_d = gpuarray.to_gpu(A)
-    B_d = gpuarray.to_gpu(B)
+    a_strides = np.array(A.strides)/A.dtype.itemsize
+    strides = a_strides[list(permutation)]
+    a_d = gpuarray.to_gpu(a)
+    b_d = gpuarray.to_gpu(b)
     f = _get_permute_kernel()
-    f.prepared_call((n1/4, n2/4, n3/4), (4, 4, 4),
-            A_d.gpudata, B_d.gpudata, n1, n2, n3, out_strides[2],
-            out_strides[1], out_strides[0])
-    B = B_d.get()
-    return B
+    f.prepared_call((b.shape[2]/8, b.shape[1]/8, b.shape[0]/8),
+            (8, 8, 8),
+            a_d.gpudata, b_d.gpudata,
+            b.shape[2], b.shape[1], b.shape[0],
+            strides[2], strides[1], strides[0])
+    b[...] = b_d.get()
 
 A = np.random.rand(32, 32, 32)
-assert_allclose(permute(A, (1, 2, 0)), A.transpose((1, 2, 0)).copy())
+B = np.zeros((32, 32, 32), dtype=np.float64)
+permute(A, B, (1, 2, 0))
+assert_allclose(B, A.transpose((1, 2, 0)).copy())
 
