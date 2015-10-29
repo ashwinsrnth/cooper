@@ -1,5 +1,4 @@
 import numpy as np
-from numpy.testing import assert_allclose
 from pycuda import autoinit
 import pycuda.gpuarray as gpuarray
 import pycuda.compiler as compiler
@@ -31,28 +30,37 @@ def _get_permute_kernel():
     permute_kernel.prepare('PPiiiiii')
     return permute_kernel
 
-def permute(a, b, permutation):
+def permute(a_d, b_d, permutation):
     '''
-    :param a:
-    :type a:
-    :param b:
-    :type b:
-    :param permutation: 
+    Permute the data in a 3-dimensional
+    GPUArray
+
+    :param a_d: Array containing data to permute
+    :type a_d: pycuda.gpuarray.GPUArray
+    :param b_d: Space for output
+    :type b_d: pycuda.gpuarray.GPUArray
+    :param permutation: The desired permutation of the axes
+        of a_d
+    :type permutation: list or tuple
     '''
-    a_strides = np.array(A.strides)/A.dtype.itemsize
+    a_strides = np.array(a_d.strides)/a_d.dtype.itemsize
     strides = a_strides[list(permutation)]
-    a_d = gpuarray.to_gpu(a)
-    b_d = gpuarray.to_gpu(b)
     f = _get_permute_kernel()
-    f.prepared_call((b.shape[2]/8, b.shape[1]/8, b.shape[0]/8),
+    f.prepared_call((b_d.shape[2]/8, b_d.shape[1]/8, b_d.shape[0]/8),
             (8, 8, 8),
             a_d.gpudata, b_d.gpudata,
-            b.shape[2], b.shape[1], b.shape[0],
+            b_d.shape[2], b_d.shape[1], b_d.shape[0],
             strides[2], strides[1], strides[0])
-    b[...] = b_d.get()
 
-A = np.random.rand(32, 32, 32)
-B = np.zeros((32, 32, 32), dtype=np.float64)
-permute(A, B, (1, 2, 0))
-assert_allclose(B, A.transpose((1, 2, 0)).copy())
+def permute_inplace(a_d, permutation):
+    a_strides = np.array(a_d.strides)/a_d.dtype.itemsize
+    strides = a_strides[list(permutation)]
+    pshape = list(np.array(a_d.shape)[list(permutation)])
+    f = _get_inplace_permute_kernel()
+    f.prepared_call((pshape[2]/8, pshape[1]/8, pshape[0]/8),
+            (8, 8, 8),
+            a_d.gpudata,
+            pshape[2], pshape[1], pshape[0],
+            strides[2], strides[1], strides[0])
+    a_d = a_d.reshape(pshape)
 
