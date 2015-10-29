@@ -51,16 +51,3 @@ def permute(a_d, b_d, permutation):
             a_d.gpudata, b_d.gpudata,
             b_d.shape[2], b_d.shape[1], b_d.shape[0],
             strides[2], strides[1], strides[0])
-
-def permute_inplace(a_d, permutation):
-    a_strides = np.array(a_d.strides)/a_d.dtype.itemsize
-    strides = a_strides[list(permutation)]
-    pshape = list(np.array(a_d.shape)[list(permutation)])
-    f = _get_inplace_permute_kernel()
-    f.prepared_call((pshape[2]/8, pshape[1]/8, pshape[0]/8),
-            (8, 8, 8),
-            a_d.gpudata,
-            pshape[2], pshape[1], pshape[0],
-            strides[2], strides[1], strides[0])
-    a_d = a_d.reshape(pshape)
-
