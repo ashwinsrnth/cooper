@@ -1,5 +1,4 @@
 import numpy as np
-from pycuda import autoinit
 import pycuda.gpuarray as gpuarray
 import pycuda.compiler as compiler
 from pycuda.tools import context_dependent_memoize
