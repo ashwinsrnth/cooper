@@ -2,7 +2,7 @@
 
 from distutils.core import setup
 
- setup(name='cooper',
+setup(name='cooper',
   version='1.0',
   description='Naive array permutations with CUDA',
   author='Ashwin Srinath',
