@@ -4,8 +4,11 @@ import numpy as np
 from pycuda import autoinit
 import pycuda.driver as cuda
 import pycuda.gpuarray as gpuarray
-from permute import permute
 import itertools
+
+import sys
+sys.path.append('../../')
+from permute import permute
 
 def time_permute():
     a = np.random.rand(32, 32, 32)
