@@ -8,7 +8,6 @@ setup(name='cooper',
   author='Ashwin Srinath',
   author_email='atrikut@g.cleemson.edu',
   url='http://github.com/ashwinsrnth/cooper',
-  packages=['distutils', 'distutils.command'],
  )
 
 
