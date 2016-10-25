@@ -11,7 +11,7 @@ for permutation in itertools.permutations((0, 1, 2)):
     b = np.zeros((32, 32, 32), dtype=np.float64)
     a_d = gpuarray.to_gpu(a)
     b_d = gpuarray.to_gpu(b)
-    permute(a_d, b_d, permutation, impl="naive")
+    permute(a_d, b_d, permutation, impl="cuTranspose")
     print("Testing permutation {} ...".format(permutation), end="")
     assert_allclose(b_d.get(), a.transpose(permutation).copy())
     print("Success.")

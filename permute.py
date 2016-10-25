@@ -1,4 +1,5 @@
 from naive.permute import naive_permute
+from cuTranspose.permute import cuTranspose_permute
 
 def permute(a_d, b_d, permutation, impl="naive"):
     '''
@@ -13,6 +14,7 @@ def permute(a_d, b_d, permutation, impl="naive"):
         of a_d
     :type permutation: list or tuple
     '''
-    
     if impl == "naive":
         naive_permute(a_d, b_d, permutation)
+    elif impl == "cuTranspose":
+        cuTranspose_permute(a_d, b_d, permutation)
