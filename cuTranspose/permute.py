@@ -10,20 +10,36 @@ with open('/home/atrikut/projects/cooper/cuTranspose/transpose3d.cu') as f:
      kernels = f.read()
 mod = compiler.SourceModule(source=kernels, options=["-O2"], arch="sm_35", include_dirs=["/home/atrikut/projects/cooper/cuTranspose/"])
 
-permute_210 = mod.get_function("dev_transpose_210_in_place")
-permute_210.prepare('Pii')
+permute_210_inplace = mod.get_function("dev_transpose_210_in_place")
+permute_210_inplace.prepare('Pii')
 
-permute_102 = mod.get_function("dev_transpose_102_in_place")
-permute_102.prepare('Pii')
+permute_102_inplace = mod.get_function("dev_transpose_102_in_place")
+permute_102_inplace.prepare('Pii')
 
-permute_021 = mod.get_function("dev_transpose_021_in_place")
-permute_021.prepare('Pii')
+permute_021_inplace = mod.get_function("dev_transpose_021_in_place")
+permute_021_inplace.prepare('Pii')
 
-permute_201 = mod.get_function("dev_transpose_201_in_place")
-permute_201.prepare('Pi')
+permute_201_inplace = mod.get_function("dev_transpose_201_in_place")
+permute_201_inplace.prepare('Pi')
 
-permute_120 = mod.get_function("dev_transpose_120_in_place")
-permute_120.prepare('Pi')
+permute_120_inplace = mod.get_function("dev_transpose_120_in_place")
+permute_120_inplace.prepare('Pi')
+
+permute_210_ept1 = mod.get_function("dev_transpose_210_ept1")
+permute_210_ept1.prepare('PPiii')
+
+permute_102_ept1 = mod.get_function("dev_transpose_102_ept1")
+permute_102_ept1.prepare('PPiii')
+
+permute_021_ept1 = mod.get_function("dev_transpose_021_ept1")
+permute_021_ept1.prepare('PPiii')
+
+permute_201_ept1 = mod.get_function("dev_transpose_201_ept1")
+permute_201_ept1.prepare('PPiii')
+
+permute_120_ept1 = mod.get_function("dev_transpose_120_ept1")
+permute_120_ept1.prepare('PPiii')
+
 
 """
 The discrepancy in the indices is that
@@ -35,21 +51,40 @@ e.g., 210 -> 210
       102 -> 021
       etc.,
 """
-def cuTranspose_permute(a_d, b_d, permutation):
-    N = b_d.shape[0]
+def cuTranspose_permute_inplace(a_d, permutation):
+    N = a_d.shape[0]
     if permutation == (2, 1, 0): #210
-        permute_210.prepared_call((N/16, N/16, N), (16, 16, 1),
+        permute_210_inplace.prepared_call((N/16, N/16, N), (16, 16, 1),
                 a_d.gpudata, N, N)
     elif permutation == (0, 2, 1): #102
-        permute_102.prepared_call((N/16, N/16, N), (16, 16, 1),
+        permute_102_inplace.prepared_call((N/16, N/16, N), (16, 16, 1),
                 a_d.gpudata, N, N)
     elif permutation == (1, 0, 2): #021
-        permute_021.prepared_call((N/16, N/16, N), (16, 16, 1),
+        permute_021_inplace.prepared_call((N/16, N/16, N), (16, 16, 1),
                 a_d.gpudata, N, N)
     elif permutation == (1, 2, 0): #201
-        permute_201.prepared_call((N/8, N/8, N/8), (8, 8, 8),
+        permute_201_inplace.prepared_call((N/8, N/8, N/8), (8, 8, 8),
                 a_d.gpudata, N)
     elif permutation == (2, 0, 1): #120
-        permute_120.prepared_call((N/8, N/8, N/8), (8, 8, 8),
+        permute_120_inplace.prepared_call((N/8, N/8, N/8), (8, 8, 8),
                 a_d.gpudata, N)
-    cuda.memcpy_dtod(b_d.gpudata, a_d.gpudata, a_d.nbytes)
+
+def cuTranspose_permute_ept1(a_d, b_d, permutation):
+    N = b_d.shape[0]
+    if permutation == (2, 1, 0): #210
+        permute_210_ept1.prepared_call((N/16, N/16, N), (16, 16, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (0, 2, 1): #102
+        permute_102_ept1.prepared_call((N/16, N/16, N), (16, 16, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (1, 0, 2): #021
+        permute_021_ept1.prepared_call((N/16, N/16, N), (16, 16, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (1, 2, 0): #201
+        permute_201_ept1.prepared_call((N/16, N/16, N), (16, 16, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (2, 0, 1): #120
+        permute_120_ept1.prepared_call((N/16, N/16, N), (16, 16, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (0, 1, 2):
+        cuda.memcpy_dtod(b_d.gpudata, a_d.gpudata, b_d.nbytes)

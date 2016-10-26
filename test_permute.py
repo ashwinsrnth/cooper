@@ -8,11 +8,22 @@ import itertools
 
 for impl in ['naive', 'cuTranspose']:
     for permutation in itertools.permutations((0, 1, 2)):
-        a = np.random.rand(32, 32, 32)
-        b = np.zeros((32, 32, 32), dtype=np.float64)
-        a_d = gpuarray.to_gpu(a)
-        b_d = gpuarray.to_gpu(b)
-        permute(a_d, b_d, permutation, impl=impl)
-        print("Testing {} implementation for permutation {} ...".format(impl, permutation), end="")
-        assert_allclose(b_d.get(), a.transpose(permutation).copy())
-        print("Success.")
+            a = np.random.rand(32, 32, 32)
+            b = np.zeros((32, 32, 32), dtype=np.float64)
+            a_d = gpuarray.to_gpu(a)
+            b_d = gpuarray.to_gpu(b)
+            print("Testing {} implementation for permutation {} ...".format(impl, permutation), end="")
+            permute(a_d, permutation, b_d, impl=impl)
+            assert_allclose(b_d.get(), a.transpose(permutation).copy())
+            print("Success.")
+
+for permutation in itertools.permutations((0, 1, 2)):
+    a = np.random.rand(32, 32, 32)
+    b = np.zeros((32, 32, 32), dtype=np.float64)
+    a_d = gpuarray.to_gpu(a)
+    b_d = gpuarray.to_gpu(b)
+    print("Testing cuTranspose (inplace) implementation for permutation {} ...".format(permutation), end="")
+    permute(a_d, permutation, impl="cuTranspose")
+    assert_allclose(a_d.get(), a.transpose(permutation).copy())
+    print("Success.")
+
