@@ -40,6 +40,23 @@ permute_201_ept1.prepare('PPiii')
 permute_120_ept1 = mod.get_function("dev_transpose_120_ept1")
 permute_120_ept1.prepare('PPiii')
 
+permute_210_ept4 = mod.get_function("dev_transpose_210_ept4")
+permute_210_ept4.prepare('PPiii')
+
+permute_102_ept4 = mod.get_function("dev_transpose_102_ept4")
+permute_102_ept4.prepare('PPiii')
+
+permute_021_ept4 = mod.get_function("dev_transpose_021_ept4")
+permute_021_ept4.prepare('PPiii')
+
+permute_201_ept4 = mod.get_function("dev_transpose_201_ept4")
+permute_201_ept4.prepare('PPiii')
+
+permute_120_ept4 = mod.get_function("dev_transpose_120_ept4")
+permute_120_ept4.prepare('PPiii')
+
+
+
 
 """
 The discrepancy in the indices is that
@@ -85,6 +102,26 @@ def cuTranspose_permute_ept1(a_d, b_d, permutation):
                 b_d.gpudata, a_d.gpudata, N, N, N)
     elif permutation == (2, 0, 1): #120
         permute_120_ept1.prepared_call((N/16, N/16, N), (16, 16, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (0, 1, 2):
+        cuda.memcpy_dtod(b_d.gpudata, a_d.gpudata, b_d.nbytes)
+
+def cuTranspose_permute_ept4(a_d, b_d, permutation):
+    N = b_d.shape[0]
+    if permutation == (2, 1, 0): #210
+        permute_210_ept4.prepared_call((N/16, N/16, N), (16, 4, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (0, 2, 1): #102
+        permute_102_ept4.prepared_call((N/16, N/16, N), (16, 4, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (1, 0, 2): #021
+        permute_021_ept4.prepared_call((N/16, N/16, N), (16, 4, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (1, 2, 0): #201
+        permute_201_ept4.prepared_call((N/16, N/16, N), (16, 4, 1),
+                b_d.gpudata, a_d.gpudata, N, N, N)
+    elif permutation == (2, 0, 1): #120
+        permute_120_ept4.prepared_call((N/16, N/16, N), (16, 4, 1),
                 b_d.gpudata, a_d.gpudata, N, N, N)
     elif permutation == (0, 1, 2):
         cuda.memcpy_dtod(b_d.gpudata, a_d.gpudata, b_d.nbytes)

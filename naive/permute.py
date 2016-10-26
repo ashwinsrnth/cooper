@@ -23,7 +23,7 @@ __global__ void permuteKernel(double *in_d,
 @context_dependent_memoize
 def _get_permute_kernel():
     module = compiler.SourceModule(kernel_text,
-            options=['-O2'])
+            options=['-O2'], arch="sm_35")
     permute_kernel = module.get_function(
             'permuteKernel')
     permute_kernel.prepare('PPiiiiii')
