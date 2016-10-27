@@ -1,4 +1,3 @@
-cooper: Naive 3-D permutations on PyCUDA gpuarrays
-==================================================
-
+cooper: 3-D Permutations using PyCUDA
+=====================================
 

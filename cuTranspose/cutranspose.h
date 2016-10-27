@@ -3,7 +3,7 @@
 
 /* #undef USE_COMPLEX */
 #define DOUBLE
-#define TILE_SIZE 16
+#define TILE_SIZE 32
 #define BRICK_SIZE 8 
 
 #ifdef USE_COMPLEX
